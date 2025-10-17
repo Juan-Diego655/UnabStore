@@ -1,5 +1,6 @@
 package me.juandiegoninoosolano.unabstore
 
+import android.app.Activity
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -24,6 +25,9 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -34,11 +38,23 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.google.firebase.Firebase
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.auth
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalView
 
 @Preview
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen(onClickRegister :()->Unit ={}) {
+    val auth = Firebase.auth
+    val activity = LocalView.current.context as Activity
+    //Estados
+    var inputEmail by remember { mutableStateOf("") }
+    var inputPassword by remember { mutableStateOf("") }
+    var LoginError by remember { mutableStateOf("")  }
     Scaffold { paddingValues ->
         Column(
             modifier = Modifier
@@ -69,8 +85,8 @@ fun LoginScreen(onClickRegister :()->Unit ={}) {
 
             // Campo de Correo Electrónico
             OutlinedTextField(
-                value = "", // Valor vacío (sin estado)
-                onValueChange = {},
+                value = inputEmail, // Valor vacío (sin estado)
+                onValueChange = {inputEmail = it},
                 label = { Text("Correo Electrónico") },
                 leadingIcon = {
                     Icon(
@@ -89,8 +105,8 @@ fun LoginScreen(onClickRegister :()->Unit ={}) {
 
             // Campo de Contraseña
             OutlinedTextField(
-                value = "", // Valor vacío (sin estado)
-                onValueChange = {},
+                value = inputPassword, // Valor vacío (sin estado)
+                onValueChange = {inputPassword = it},
                 label = { Text("Contraseña") },
                 leadingIcon = {
                     Icon(
@@ -109,9 +125,19 @@ fun LoginScreen(onClickRegister :()->Unit ={}) {
                 )
             )
             Spacer(modifier = Modifier.height(24.dp))
+
             // Botón de Iniciar Sesión
             Button(
-                onClick = { },
+                onClick = {
+                auth.signInWithEmailAndPassword(inputEmail,inputPassword)
+                    .addOnCompleteListener(activity) { task ->
+                        if(task.isSuccessful){
+
+                        }else{
+                            LoginError = "Error al iniciar sesión"
+                        }
+                    }
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(50.dp),
